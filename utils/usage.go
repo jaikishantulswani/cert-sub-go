@@ -13,6 +13,7 @@ type UserSettings struct {
 	OutFilename     string
 	VerboseLogging  bool
 	FetchInterval   int // Add this line
+    	Retry           bool // Add this line
 }
 
 func UserInput() *UserSettings {
@@ -27,6 +28,7 @@ func UserInput() *UserSettings {
 	flag.StringVar(&userSettings.OutFilename, "o", "cert-sub-go.out", "Output filename, default: cert-sub-go.out")
 	flag.BoolVar(&userSettings.VerboseLogging, "v", false, "Verbose logging.")
 	flag.IntVar(&userSettings.FetchInterval, "f", 5, "Interval in seconds between fetching log entries.") // Add this line
+    	flag.BoolVar(&userSettings.Retry, "rt", false, "Retry connecting until the internet is up") // Add this line
 
 	// Parse flags
 	flag.Parse()
@@ -55,3 +57,4 @@ func PrintUsage() {
 	fmt.Println("Example:")
 	fmt.Println("  cert-sub-go -r targets.txt")
 }
+     
