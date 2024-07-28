@@ -25,10 +25,19 @@ func scanLog(ctx context.Context, ctl utils.CtLog, domainChan chan<- string, fet
     var err error
     blockSize := userSettings.BlockSize
 
-    ctl.Wsth, err = ctl.Client.GetSTH(ctx)
-    if err != nil {
-        log.Printf("Failed to get initial STH for log %s: %v", ctl.Client.BaseURI(), err)
-        return
+    for {
+        ctl.Wsth, err = ctl.Client.GetSTH(ctx)
+        if err != nil {
+            log.Printf("Failed to get initial STH for log %s: %v", ctl.Client.BaseURI(), err)
+            if userSettings.Retry {
+                log.Println("Retrying...")
+                time.Sleep(5 * time.Second) // Adjust the retry interval as needed
+                continue
+            } else {
+                return
+            }
+        }
+        break
     }
 
     if int64(ctl.Wsth.TreeSize) <= blockSize {
@@ -42,7 +51,14 @@ func scanLog(ctx context.Context, ctl utils.CtLog, domainChan chan<- string, fet
     for {
         entries, err := ctl.Client.GetRawEntries(ctx, fromNum, toNum)
         if err != nil {
-            break
+            log.Printf("Failed to get entries for log %s: %v", ctl.Client.BaseURI(), err)
+            if userSettings.Retry {
+                log.Println("Retrying...")
+                time.Sleep(5 * time.Second) // Adjust the retry interval as needed
+                continue
+            } else {
+                break
+            }
         }
 
         utils.ProcessEntries(entries, userSettings, domainChan)
